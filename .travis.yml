@@ -1,24 +1,45 @@
 language: android
+
+jdk: oraclejdk8
+
+env:
+
+ global:
+
+   - ANDROID_TARGET=android-15
+
+   - ANDROID_ABI=armeabi-v7a
+
 android:
-  components:
-    - tools
-    - build-tools-24.0.1
-    - android-24
-    - platform-tools
-    - extra-android-support
-    - extra-android-m2repository 
-  licenses:
-    - '.+'
 
-sudo: required
+ components:
 
-jdk:
-  - oraclejdk8
+ - tools
 
-install: true
+ - platform-tools
 
-before_script:
-  - chmod +x gradlew
+ - build-tools-25.0.2
+
+ - android-25
+
+ - extra-android-m2repository
+
+ - sys-img-${ANDROID_ABI}-${ANDROID_TARGET}
 
 script:
-  - ./gradlew assembleRelease --stacktrace
+
+ - ./gradlew build jacocoTestReport assembleAndroidTest
+
+ - echo no | android create avd --force -n test -t $ANDROID_TARGET --abi $ANDROID_ABI
+
+ - emulator -avd test -no-skin -no-audio -no-window &
+
+ - android-wait-for-emulator
+
+ - adb shell setprop dalvik.vm.dexopt-flags v=n,o=v
+
+ - ./gradlew connectedCheck
+
+after_success:
+
+ - bash <(curl -s https://codecov.io/bash)

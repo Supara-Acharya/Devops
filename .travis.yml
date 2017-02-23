@@ -6,6 +6,7 @@ sudo: required
 jdk: oraclejdk8
 
 
+
 env:
  global:
  - ANDROID_API=24
@@ -43,6 +44,7 @@ before_install:
 
 before_script:
 - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
+
 - adb shell input keyevent 82 &
 
 script:

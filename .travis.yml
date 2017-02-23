@@ -1,49 +1,46 @@
-
 language: android
 sudo: false
 jdk: oraclejdk8
-
 env:
- global:
- - ANDROID_API=24
- - EMULATOR_API=21
- - ANDROID_BUILD_TOOLS=24.0.2
- - ADB_INSTALL_TIMEOUT=5 
- 
+  global:
+  - ANDROID_API=24
+  - EMULATOR_API=21
+  - ANDROID_BUILD_TOOLS=24.0.2
+  - ADB_INSTALL_TIMEOUT=5
 android:
- components:
- - tools
- - platform-tools
- - build-tools-$ANDROID_BUILD_TOOLS
- - android-$ANDROID_API
- - android-$EMULATOR_API_LEVEL
- - extra-google-m2repository
- - extra-android-m2repository # for design library
- - addon-google_apis-google-19 # google play services
- - sys-img-armeabi-v7a-addon-google_apis-google-$ANDROID_API_LEVEL
- - sys-img-armeabi-v7a-addon-google_apis-google-$EMULATOR_API_LEVEL
-
- licenses:
- - android-sdk-preview-license-.+
- - android-sdk-license-.+
- - google-gdk-license-.+
-
+  components:
+  - tools
+  - platform-tools
+  - build-tools-$ANDROID_BUILD_TOOLS
+  - android-$ANDROID_API
+  - android-$EMULATOR_API_LEVEL
+  - extra-google-m2repository
+  - extra-android-m2repository
+  - addon-google_apis-google-19
+  - sys-img-armeabi-v7a-addon-google_apis-google-$ANDROID_API_LEVEL
+  - sys-img-armeabi-v7a-addon-google_apis-google-$EMULATOR_API_LEVEL
+  licenses:
+  - android-sdk-preview-license-.+
+  - android-sdk-license-.+
+  - google-gdk-license-.+
 before_install:
 - mkdir "$ANDROID_HOME/licenses" || true
 - echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > "$ANDROID_HOME/licenses/android-sdk-license"
 - echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
 - chmod +x gradlew
-- ./gradlew dependencies || true # DON'T ADD unless you are getting "Install missing components using SDK manager"
-#Source: https://medium.com/@oldergod/constraint-layout-and-circleci-travis-d50342696d2
-
+- "./gradlew dependencies || true"
 before_script:
 - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
 - emulator -avd test -no-skin -no-audio -no-window &
 - android-wait-for-emulator
 - adb shell input keyevent 82 &
-
 script:
 - "./gradlew clean build connectedCheck -PdisablePreDex --stacktrace"
-
-
-
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: sLCZp6lFHAXIbwhBAZejKTtXQ1MLFm1YDkY90Ow2QeEfMGEgAbyr/oj1imvVvr8Sxgel4J76FIf6YNuy7QtnSng21uIK91qSzSO1adIdecCLNRVhYI2DnJV/zqI7hzQShmHnm4DFDSZTXOYqJ1nYF5aVRz+ZhrFbDSitQLPnq4L/e8a8CLZ1MIbcTrRPd8HOBwNp6JSL6pNCT+tVOqSrdpXayq1cpDkntZ8Mafe/b/BfjEuAwgeO0c5Jn/cKVbzMPX/cy4mSOW5bzlArmzKyNT7F5V2OmI71yTV+mocGzjHRrLRQHkd0l8eHWtn890fRBXbib53P5cPHZfMmH5mZpS9bdvI/LcgGb+JkvVNaD6tD/lE+OCFtgtFpwC2lhUb9m2JnFdsVmn2DZh5FFqrUcKpRqy5ikhZFYPuiXLBBgi9PS5xb8yhNit1ocMKq52h15YhSWvJKm2slr3462UQAwzMVwZK+yV65z1iwY5/S1HjUxgM4yIxLFIjOH3FuOde272cjXGhfbGlpzl3hCqiDv2BFsDekvXPF0T/mJTuF91l5N7mb6yBj/QREWUS22fZRJbkKt/v4EGIoFbDuvUDipb6Ei5+vDzfFeTmhV409P0/HOURejK/RlHr41fjEXBuWmD0WRAnp2YBOvpULt7RElGb2NcAkJSNjcGGl8BOzzBU=
+  file: "./app/build/outputs/apk/app-release-unsigned.apk"
+  on:
+    repo: Suparna-Acharya/Devops
